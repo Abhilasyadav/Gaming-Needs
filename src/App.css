@@ -1,0 +1,90 @@
+.homepage {
+  font-family: 'Segoe UI', sans-serif;
+  padding: 20px;
+}
+
+.hero-section {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: #111;
+  color: #fff;
+  border-radius: 10px;
+}
+
+.hero-section h1 {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.hero-section p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+}
+
+.cta-buttons button {
+  margin: 0 10px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 25px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.buy-btn {
+  background-color: #28a745;
+  color: white;
+}
+
+.sell-btn {
+  background-color: #007bff;
+  color: white;
+}
+
+.buy-btn:hover,
+.sell-btn:hover {
+  opacity: 0.85;
+}
+
+.featured-products {
+  margin-top: 40px;
+}
+
+.featured-products h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.product-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+}
+
+.product-card {
+  background: #f4f4f4;
+  padding: 20px;
+  border-radius: 15px;
+  width: 200px;
+  text-align: center;
+}
+
+.product-card img {
+  max-width: 100%;
+  border-radius: 10px;
+}
+
+.buy-now {
+  background-color: #ff4500;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  margin-top: 10px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+
+.buy-now:hover {
+  background-color: #e03e00;
+}
