@@ -1,23 +1,28 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useParams, Link } from "react-router-dom";
-// import "../OrderSummary.css";
-// import html2pdf from "html2pdf.js";
+import { useParams, Link, useNavigate } from "react-router-dom";
+import "./OrderSummary.css";
+import html2pdf from "html2pdf.js";
+
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function OrderSummary() {
   const { orderId } = useParams();
   const [data, setData] = useState(null);
   const [err, setErr] = useState("");
   const invoiceRef = useRef();
+  const navigate = useNavigate();
+
+  console.log("Order ID:", orderId);
 
   useEffect(() => {
     (async () => {
       try {
-        const r = await fetch(`http://localhost:8080/payment/order/summary/${orderId}`,{
+        const r = await fetch(`${API_BASE}/payment/order/summary/${orderId}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem("authToken")}`
-          }
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
         });
         if (!r.ok) throw new Error("Unable to fetch order");
         const json = await r.json();
@@ -48,15 +53,27 @@ export default function OrderSummary() {
       <div ref={invoiceRef}>
         <div className="bill-header">
           <h2>🧾 Gaming Needs - Order Invoice</h2>
-          <p><b>Order ID:</b> {data.orderId}</p>
-          <p><b>Status:</b> {data.status}</p>
-          <p><b>Date:</b> {new Date().toLocaleString()}</p>
+          <p>
+            <b>Order ID:</b> {data.orderId}
+          </p>
+          <p>
+            <b>Status:</b> {data.status}
+          </p>
+          <p>
+            <b>Date:</b> {new Date().toLocaleString()}
+          </p>
         </div>
 
         <div className="bill-table-wrapper">
           <table className="bill-table">
             <thead>
-              <tr><th>S.No.</th><th>Name</th><th>Qty</th><th>Price</th><th>Subtotal</th></tr>
+              <tr>
+                <th>S.No.</th>
+                <th>Name</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+              </tr>
             </thead>
             <tbody>
               {data.items.map((it, idx) => (
@@ -77,7 +94,7 @@ export default function OrderSummary() {
         </div>
 
         <div className="bill-footer">
-          <p>Thank you for shopping with SalesSavvy! 😊</p>
+          <p>Thank you for shopping with Gaming Needs! 😊</p>
         </div>
       </div>
 
@@ -86,7 +103,7 @@ export default function OrderSummary() {
           Download Invoice (PDF)
         </button>
         &nbsp;
-        <Link to="/" className="continue-shopping-btn">
+        <Link to="/user" className="continue-shopping-btn">
           Continue Shopping
         </Link>
       </div>

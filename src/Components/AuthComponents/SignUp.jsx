@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 
+const API_BASE = import.meta.env.VITEP_API_BASE;
+
 const SignUp = () => {
     const [formData, setFormData] = useState({
         username: '',
@@ -45,7 +47,7 @@ const SignUp = () => {
         }
 
         try {
-            const res = await fetch('http://localhost:8080/signup', {
+            const res = await fetch(`${API_BASE}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)

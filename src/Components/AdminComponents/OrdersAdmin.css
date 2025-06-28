@@ -1,13 +1,12 @@
 /* Color Palette */
 :root {
   --bg-light: #dad7cd;
-  --accent-1: #a3b18a;
-  --accent-2: #588157;
-  --accent-3: #3a5a40;
-  --dark: #344e41;
+  --accent-1: #8ab1af;
+  --accent-2: #577981;
+  --accent-3: #3a535a;
+  --dark: #34394e;
 }
 
-/* Layout */
 body {
   margin: 0;
   font-family: "Segoe UI", sans-serif;
@@ -15,15 +14,7 @@ body {
   color: var(--dark);
 }
 
-.admin-navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: var(--accent-3);
-  color: white;
-  padding: 15px 30px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
+
 
 .admin-logo {
   font-size: 1.5rem;
@@ -51,7 +42,6 @@ body {
   border-radius: 4px;
 }
 
-/* Orders Section */
 .orders-heading {
   text-align: center;
   margin-top: 20px;
@@ -104,7 +94,6 @@ body {
   font-weight: bold;
 }
 
-/* Status Controls */
 .status-update,
 .return-request-actions {
   margin-top: 15px;
@@ -125,7 +114,6 @@ select {
 }
 
 
-/* ... existing CSS stays unchanged ... */
 
 .badge {
   display: inline-block;
@@ -190,6 +178,6 @@ select {
 }
 
 .status-tab.active {
-  background-color: #588157;
+  background-color: #576b81;
   color: white;
 }

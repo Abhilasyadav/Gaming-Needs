@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
 import { toast } from 'react-toastify';
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 const SignIn = ({ setIsAuthenticated, setUserRole }) => {
   const [formData, setFormData] = useState({
     username: '',
@@ -19,7 +21,6 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear errors when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -47,7 +48,7 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
     setErrors({});
 
     try {
-      const res = await fetch('http://localhost:8080/signin', {
+      const res = await fetch(`${API_BASE}/signin`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json'
@@ -73,8 +74,6 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
       }
 
       console.log("Parsed data =>", data);
-
-      // Handle both cases: token in object or token as string
       const token = typeof data === 'string' ? data : data.token;
       
       if (!token) {

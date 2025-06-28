@@ -1,7 +1,9 @@
 import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-toastify';
 
-export default function ProductList({ products, onViewDetails, onMenuItemClick}) {
+const API_BASE = import.meta.env.VITE_API_BASE;
+
+export default function ProductList({ products, onViewDetails, onMenuItemClick }) {
 
   const containerStyles = {
     backgroundColor: '#fff',
@@ -124,6 +126,32 @@ export default function ProductList({ products, onViewDetails, onMenuItemClick})
     color: '#666',
   };
 
+  const deleteButtonStyles = {
+  backgroundColor: 'rgba(96, 98, 100, 0.3)',
+  color: 'rgb(179, 10, 10)',
+  border: 'none',
+  padding: '8px 15px',
+  marginLeft: '10px',
+  borderRadius: '6px',
+  fontWeight: 'bold',
+  fontSize: '1em',
+  cursor: 'pointer',
+  transition: 'background 0.2s'
+}
+
+  const viewButtonStyles = {
+  backgroundColor: 'rgba(96, 98, 100, 0.3)',
+  color: 'rgb(11, 89, 22)',
+  border: 'none',
+  padding: '8px 15px',
+  marginLeft: '10px',
+  borderRadius: '6px',
+  fontWeight: 'bold',
+  fontSize: '1em',
+  cursor: 'pointer',
+  transition: 'background 0.2s'
+}
+
   const paginationButtonStyles = {
     padding: '8px 12px',
     borderRadius: '5px',
@@ -141,31 +169,30 @@ export default function ProductList({ products, onViewDetails, onMenuItemClick})
     borderColor: '#007bff',
   };
 
-  const token  = localStorage.getItem('authToken')
+
+  const token = localStorage.getItem('authToken');
 
   const handleDeleteProduct = async (productId) => {
-  const id = productId;
-  try {
-    const res = await fetch(`http://localhost:8080/deleteProduct/${id}`, {
-      method: 'DELETE',
-      headers: { 
-        'Authorization': `Bearer ${token}`
+    try {
+      const res = await fetch(`${API_BASE}/deleteProduct/${productId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        toast.success("Product deleted successfully");
+      } else {
+        const errorText = await res.text();
+        console.error("Failed to delete product:", errorText);
       }
-    });
-
-    if (res.ok) {
-      toast.success("Product deleted successfully");
-      // console.log("Product deleted successfully");
-    } else {
-      const errorText = await res.text();
-      console.error("Failed to delete product:", errorText);
+    } catch (error) {
+      console.error("Network or server error:", error);
     }
-  } catch (error) {
-    console.error("Network or server error:", error);
-  }
-};
+  };
 
- let user_Id = "";
+  let user_Id = "";
   try {
     const token2 = localStorage.getItem("authToken");
     const decoded = jwtDecode(token2);
@@ -174,14 +201,12 @@ export default function ProductList({ products, onViewDetails, onMenuItemClick})
     user_Id = "";
   }
 
-
   return (
     <div style={containerStyles}>
       <div style={headerStyles}>
         <h2 style={titleStyles}>Products List</h2>
         <div style={actionsStyles}>
-          {/* <button style={actionButtonStyles}>Filter</button> */}
-          <button style={seeAllButtonStyles} onClick={() => onMenuItemClick('add_product')}>+ Add new</button>
+          <button style={seeAllButtonStyles} onClick={() => onMenuItemClick('products')}>+ Add new</button>
         </div>
       </div>
 
@@ -199,58 +224,52 @@ export default function ProductList({ products, onViewDetails, onMenuItemClick})
           </thead>
           <tbody>
             {products
-            .filter((product) => product.userId === user_Id)
-            .map((product) => (
-              <tr key={product.id} style={clickableRowStyles} onClick={() => onViewDetails(product.id)}>
-                <td style={{ ...tdStyles, display: 'flex', alignItems: 'center' }}>
-                  <img src={product.photo} alt={product.name} style={photoCellStyles} />
-                  {product.name}
-                </td>
-                <td style={tdStyles}>{product.category}</td>
-                <td style={tdStyles}>₹{product.price.toFixed(2)}</td>
-                <td style={tdStyles}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();              
-                      handleDeleteProduct(product.id);  
-                    }}
-                  >
-                    Delete
-                  </button>
-                </td>
-                <td style={tdStyles}>
-                  <span
-                    style={
-                      product.status === 'Scheduled'
-                        ? statusScheduledStyles
-                        : product.status === 'Active'
+              .filter((product) => product.userId === user_Id)
+              .map((product) => (
+                <tr key={product.id} style={clickableRowStyles} onClick={() => onViewDetails(product.id)}>
+                  <td style={{ ...tdStyles, display: 'flex', alignItems: 'center' }}>
+                    <img src={product.photo} alt={product.name} style={photoCellStyles} />
+                    {product.name}
+                  </td>
+                  <td style={tdStyles}>{product.category}</td>
+                  <td style={tdStyles}>₹{product.price.toFixed(1)}</td>
+                  <td style={tdStyles}>
+                    <button
+                      style={deleteButtonStyles}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteProduct(product.id);
+                      }}
+                    >
+                      Delete
+                    </button>
+                  </td>
+                  <td style={tdStyles}>
+                    <span
+                      style={
+                        product.status === 'Scheduled'
+                          ? statusScheduledStyles
+                          : product.status === 'Active'
                           ? statusActiveStyles
                           : statusDraftStyles
-                    }
-                  >
-                    {product.status}
-                  </span>
-                </td>
-                <td style={tdStyles}>
-                  {/* Stop propagation to prevent the row's onClick from firing when button is clicked */}
-                  <button style={{
-                    backgroundColor: 'transparent',
-                    border: 'none',
-                    color: '#007bff',
-                    cursor: 'pointer',
-                    fontSize: '0.9em',
-                    textDecoration: 'underline'
-                  }} onClick={(e) => { e.stopPropagation(); onViewDetails(product.id); }}>
-                    View
-                  </button>
-                </td>
-              </tr>
-            ))}
+                      }
+                    >
+                      {product.status}
+                    </span>
+                  </td>
+                  <td style={tdStyles}>
+                    <button
+                      style={viewButtonStyles}
+                      onClick={(e) => { e.stopPropagation(); onViewDetails(product.id); }}>
+                      View
+                    </button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
       <div style={paginationContainerStyles}>
         <button style={paginationButtonStyles}>&larr; Previous</button>
         <button style={paginationButtonStyles}>Next &rarr;</button>

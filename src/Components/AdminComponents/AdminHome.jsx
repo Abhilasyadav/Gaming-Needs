@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; 
+import { useState, useEffect } from 'react'; 
 import AdminSidebar from './AdminSideBar';
 import ProductList from './ProductList';
 import AddProduct from './AddProduct';
@@ -7,8 +7,10 @@ import OrderAdmin from './OrdersAdmin';
 import CustomerManagement from './CustomerManagement';
 import { toast } from 'react-toastify';
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export default function AdminHome({ onLogout }) {
-  const [activeContent, setActiveContent] = useState('product_list');
+  const [activeContent, setActiveContent] = useState('dashboard');
   const [selectedProductForViewEdit, setSelectedProductForViewEdit] = useState(null);
   const [allProducts, setAllProducts] = useState([]); 
 
@@ -18,12 +20,12 @@ export default function AdminHome({ onLogout }) {
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/getAllProduct', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          "Authorization": `Bearer ${token}`
-        }});
+        const response = await fetch(`${API_BASE}/getAllProduct`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            "Authorization": `Bearer ${token}`
+          }});
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -52,7 +54,7 @@ export default function AdminHome({ onLogout }) {
         backgroundColor: '#f44336',
         color: '#fff',
       }); 
-      setActiveContent('product_list'); 
+      setActiveContent('view_edit_product'); 
     }
   };
 
@@ -62,22 +64,20 @@ export default function AdminHome({ onLogout }) {
     setAllProducts(prevProducts =>
       prevProducts.map(p => (p.id === updatedProduct.id ? updatedProduct : p))
     );
-    toast.success(`Product "${updatedProduct.name}" updated successfully!`, {
-      backgroundColor: '#4CAF50',});
 
-    setActiveContent('product_list'); 
-    setSelectedProductForViewEdit(null); 
+    setActiveContent('dashboard'); 
+    setSelectedProductForViewEdit(updatedProduct); 
   };
 
   const handleProductAdded = (newProduct) => {
     setAllProducts(prevProducts => [...prevProducts, newProduct]);
-    setActiveContent('product_list'); 
+    setActiveContent('dashboard'); 
     toast.success(`Product "${newProduct.name}" added successfully!`, {
-      backgroundColor: '#4CAF50'})
+      backgroundColor: '#28a745'})
   };
 
   const handleCancelEditProduct = () => {
-    setActiveContent('product_list');
+    setActiveContent('dashboard');
     setSelectedProductForViewEdit(null);
   };
 
@@ -117,25 +117,16 @@ export default function AdminHome({ onLogout }) {
 
   return (
     <div style={adminLayoutStyles}>
-      {/* Admin Sidebar */}
       <AdminSidebar 
         activeItem={activeContent} 
         onMenuItemClick={handleMenuItemClick}
         onLogout={onLogout}
       />
 
-      {/* Main Content Area */}
       <div style={mainContentAreaStyles}>
         <h1 style={headingStyles}>Admin Dashboard</h1>
 
         {activeContent === 'dashboard' && (
-          <div style={placeholderSectionStyles}>
-            <h2>Dashboard Overview</h2>
-            <p>Welcome to your admin dashboard!</p>
-          </div>
-        )}
-
-        {activeContent === 'product_list' && (
           <ProductList
             products={allProducts}
             onViewDetails={handleViewEditProduct}
@@ -143,11 +134,10 @@ export default function AdminHome({ onLogout }) {
           />
         )}
 
-        {activeContent === 'add_product' && (
+        {activeContent === 'products' && (
           <AddProduct onProductAdded={handleProductAdded} />
         )}
 
-        {/* View/Edit Product Page */}
         {activeContent === 'view_edit_product' && selectedProductForViewEdit && (
           <ProductViewEdit
             product={selectedProductForViewEdit}
@@ -162,25 +152,14 @@ export default function AdminHome({ onLogout }) {
             <p>Please select a product from the list to view or edit its details.</p>
           </div>
         )}
-
-        {activeContent === 'categories' && (
-          <div style={placeholderSectionStyles}>
-            <h2>Category Management</h2>
-            <p>Manage product categories here.</p>
-          </div>
-        )}
+        
         {activeContent === 'customers' && (
           <CustomerManagement/>
         )}
         {activeContent === 'orders' && (
           <OrderAdmin />
         )}
-        {activeContent === 'analytics' && (
-          <div style={placeholderSectionStyles}>
-            <h2>Analytics & Reports</h2>
-            <p>View sales data and performance metrics.</p>
-          </div>
-        )}
+
         {activeContent === 'notifications' && (
           <div style={placeholderSectionStyles}>
             <h2>Notifications Center</h2>

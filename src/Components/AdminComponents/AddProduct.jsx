@@ -2,6 +2,8 @@ import React, { use, useState } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import { toast } from 'react-toastify';
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export default function AddProduct() {
   const [productData, setProductData] = useState({
     userId: '', 
@@ -217,11 +219,8 @@ export default function AddProduct() {
       price: parseFloat(productData.price), 
     };
 
-    console.log('Submitting Product Data:', submissionData);
-
-
     try {
-      const response = await fetch('http://localhost:8080/addProduct', {
+      const response = await fetch(`${API_BASE}/addProduct`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./CustomerManagement.css";
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 const CustomerManagement = () => {
   const [customers, setCustomers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,7 @@ const CustomerManagement = () => {
       try {
         setLoading(true);
         setError(null);
-        const res = await fetch("http://localhost:8080/admin/getUsers", {
+        const res = await fetch(`${API_BASE}/admin/getUsers`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

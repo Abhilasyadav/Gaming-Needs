@@ -16,10 +16,11 @@ import Cart from './Components/CustomerComponents/Cart/Cart';
 import { jwtDecode } from 'jwt-decode';
 import { AuthContext } from './Components/AuthComponents/AuthContext'
 import Orders from './Components/CustomerComponents/Orders/Orders';
-import OrdersSummary from './Components/CustomerComponents/Orders/OrderSummary';
+import OrderSummary from './Components/CustomerComponents/Orders/OrderSummary';
 import Customer from './Components/AdminComponents/CustomerManagement';
 
-// Protected Route Component
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 const ProtectedRoute = ({ children, requiredRole, userRole, isAuthenticated }) => {
   if (!isAuthenticated) {
     return <Navigate to="/signin" replace />;
@@ -43,29 +44,27 @@ const PublicRoute = ({ children, isAuthenticated, userRole }) => {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRole, setUserRole] = useState(null);
-  
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+  const [search, setSearch] = useState("");
+
   useEffect(() => {
     const checkAuth = () => {
       const token = localStorage.getItem('authToken');
       const role = localStorage.getItem('userRole');
-      
       if (token && role) {
         setIsAuthenticated(true);
         setUserRole(role);
       }
     };
-    
     checkAuth();
   }, []);
 
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
-        const response = await fetch('http://localhost:8080/getAllProduct', {
+        const response = await fetch(`${API_BASE}/getAllProduct`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -87,7 +86,6 @@ function App() {
 
     fetchAllProducts();
   }, []);
-
 
   async function handleAddToCart(product, qty = 1) {
     const jwtcode = localStorage.getItem("authToken");
@@ -116,7 +114,7 @@ function App() {
     }
 
     try {
-      const resp = await fetch("http://localhost:8080/cart/add", {
+      const resp = await fetch(`${API_BASE}/cart/add`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -127,7 +125,6 @@ function App() {
 
       if (resp.ok) {
         toast.success(`Added "${product.name}" (x${qty}) to cart`);
-        // alert(`Added "${product.name}" (x${qty}) to cart`);
       } else {
         const errorText = await resp.text();
         toast.error(`Could not add to cart: ${errorText}`);
@@ -147,7 +144,6 @@ function App() {
         setUserRole
       }}>
         <Routes>
-          {/* Public Routes */}
           <Route 
             path="/signin" 
             element={
@@ -165,7 +161,6 @@ function App() {
             } 
           />
           
-          {/* Admin Routes */}
           <Route 
             path="/admin/*" 
             element={
@@ -179,7 +174,6 @@ function App() {
             } 
           />
           
-          {/* User Routes (Customer Routes) */}
           <Route 
             path="/user/*" 
             element={
@@ -193,6 +187,8 @@ function App() {
                   loading={loading}
                   error={error}
                   onAddToCart={handleAddToCart}
+                  search={search}
+                  setSearch={setSearch}
                 />
               </ProtectedRoute>
             } 
@@ -208,7 +204,6 @@ function App() {
             } 
           />
           
-          {/* 404 route */}
           <Route path="*" element={<div><h1>404 Not Found</h1></div>} />
         </Routes>
       </AuthContext.Provider>
@@ -232,7 +227,7 @@ function App() {
         }}
         toastStyle={{
           borderRadius: "8px",
-          background: "#4a90e2",
+          background: "#5CB338",
           color: "#fff",
           boxShadow: "0 2px 12px rgba(82, 186, 177, 0.78)"
         }}
@@ -241,8 +236,8 @@ function App() {
   );
 }
 
-// User Routes Component (handles all customer/user functionality)
-const UserRoutes = ({ products, loading, error, onAddToCart }) => {
+
+const UserRoutes = ({ products, loading, error, onAddToCart, search, setSearch }) => {
   const jwtcode = localStorage.getItem("authToken");
   const decoded = jwtDecode(jwtcode);
   const username = decoded.sub;
@@ -256,20 +251,19 @@ const UserRoutes = ({ products, loading, error, onAddToCart }) => {
             loading={loading}
             error={error}
             onAddToCart={onAddToCart}
+            search={search}
+            setSearch={setSearch}
           />
-          
         } 
       />
       
-      {/* Individual customer/user routes */}
       <Route path="about" element={<About />} />
       <Route path="contact" element={<Contact />} />
       <Route path="cart" element={<Cart username={username} />} />
       <Route path="order" element={<Orders username={username}/>} />
-      <Route path="order-summary" element={<OrdersSummary/>} />
+      <Route path="order-summary/:orderId" element={<OrderSummary />} />
       <Route path="customermanagement" element={<Customer />} />
       
-      {/* Product related routes */}
       <Route
         path="products"
         element={

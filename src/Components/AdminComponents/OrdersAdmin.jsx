@@ -1,113 +1,69 @@
 import React, { useEffect, useState } from 'react';
 import './OrdersAdmin.css';
 import { toast } from 'react-toastify';
+import { useNavigate, NavLink } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 export default function OrderAdmin() {
+  const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState("All");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const token = localStorage.getItem("authToken");
+  const decoded = jwtDecode(token);
+  const user_id = decoded?.userId;
 
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const res = await fetch("http://localhost:8080/orders/admin/all", {
-          method: "GET",
-          headers: {
-            'Content-Type': 'application/json',
-            "Authorization": `Bearer ${token}`
-          }
-        });
-        
+    fetch(`${API_BASE}/orders/admin/orders`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("authToken")}`
+      }
+    })
+      .then(async res => {
         if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
+          if (res.status === 401 || res.status === 403) {
+            navigate("/", { replace: true });
+          }
+          throw new Error("Failed to fetch orders");
         }
-        
         const data = await res.json();
-        
-        const normalized = data.map(order => {
-          const normalizedItems = order.items ? order.items.map(item => {
-
-            let product = null;
-            
-            if (item.product) {
-              product = item.product;
-            } else if (item.productId) {
-              product = {
-                id: item.productId,
-                name: item.productName || `Product ${item.productId}`,
-                photo: item.productPhoto || '/default-product.jpg',
-                price: item.productPrice || 0
-              };
-            }
-            
-            return {
-              ...item,
-              product: product,
-              quantity: item.quantity || 1
-            };
-          }) : [];
-          
-          return {
-            ...order,
-            items: normalizedItems,
-            status: !order.status || order.status.trim() === "" || order.status === "PAID"
+        const filtered = data.filter(order =>
+          order.items.some(item => item.product && item.product.userId === user_id)
+        );
+        const normalized = filtered.map(order => ({
+          ...order,
+          status:
+            !order.status || order.status.trim() === "" || order.status === "PAID"
               ? "Pending"
               : order.status
-          };
-        });
-        
+        }));
         setOrders(normalized);
-      } catch (err) {
+      })
+      .catch(err => {
         console.error("Failed to fetch orders:", err);
-        setError(`Failed to fetch orders: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    if (token) {
-      fetchOrders();
-    } else {
-      setError("No authentication token found");
-      setLoading(false);
-    }
-  }, [token]);
+      });
+  }, [navigate, user_id]);
 
   const updateStatus = async (orderId, newStatus) => {
     const statusToSet = newStatus && newStatus.trim() !== "" ? newStatus : "Pending";
     try {
-      const res = await fetch(`http://localhost:8080/orders/admin/${orderId}/status`, {
+      const res = await fetch(`${API_BASE}/orders/admin/${orderId}/status`, {
         method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          "Authorization": `Bearer ${token}`
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("authToken")}`
         },
-        body: JSON.stringify(statusToSet),
+        body: statusToSet
       });
-      
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-      
+      if (!res.ok) throw new Error("Failed to update status");
       setOrders(prev =>
         prev.map(o => o.id === orderId ? { ...o, status: statusToSet } : o)
       );
     } catch (err) {
       console.error("Failed to update status:", err);
-      toast.error(`Failed to update status: ${err.message}`, {
-        style: {
-          background: "#e53935", 
-          color: "#fff",
-          borderRadius: "8px",
-          fontWeight: "bold"
-        }
-      });
     }
   };
 
@@ -162,46 +118,6 @@ export default function OrderAdmin() {
     return <span className={badge.class}>{badge.label}</span>;
   };
 
-  const renderOrderItem = (item, idx) => {
-    const product = item.product;
-    
-    if (!product) {
-      return (
-        <div key={idx} className="order-item">
-          <div className="product-placeholder">
-            <div className="no-image">📦</div>
-            <div>
-              <p className="product-warning">⚠️ Product information unavailable</p>
-              <p>Quantity: {item.quantity || 1}</p>
-              {item.productId && <p>Product ID: {item.productId}</p>}
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    return (
-      <div key={idx} className="order-item">
-        <div className="product-image">
-          <img 
-            src={product.photo || '/default-product.jpg'} 
-            alt={product.name || 'Product'} 
-            onError={(e) => {
-              e.target.src = '/default-product.jpg';
-              e.target.alt = 'Image not available';
-            }}
-          />
-        </div>
-        <div className="product-details">
-          <p className="product-name">{product.name || 'Unknown Product'}</p>
-          <p>Quantity: {item.quantity || 1}</p>
-          {product.price && <p>Price: ${product.price}</p>}
-          {product.id && <p className="product-id">ID: {product.id}</p>}
-        </div>
-      </div>
-    );
-  };
-
   const filteredOrders = selectedStatus === "All"
     ? orders
     : orders.filter(o => o.status === selectedStatus);
@@ -218,27 +134,9 @@ export default function OrderAdmin() {
     "RETURN_REJECTED"
   ];
 
-  if (loading) {
-    return (
-      <div className="admin-page">
-        <div className="loading">Loading orders...</div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="admin-page">
-        <div className="error">
-          <p>Error: {error}</p>
-          <button onClick={() => window.location.reload()}>Retry</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="admin-page">
+
       <div className="status-navbar">
         {statusOptions.map(status => (
           <button
@@ -251,39 +149,51 @@ export default function OrderAdmin() {
         ))}
       </div>
 
-      <h2 className="orders-heading">
-        {selectedStatus} Orders ({filteredOrders.length})
-      </h2>
+      <h2 className="orders-heading">{selectedStatus} Orders</h2>
 
-      {filteredOrders.length === 0 ? (
-        <div className="no-orders">
-          <p>No {selectedStatus.toLowerCase()} orders found.</p>
-        </div>
-      ) : (
-        <div className="orders-list">
-          {filteredOrders.map(order => (
-            <div key={order.id} className="order-card">
-              <div className="order-header">
-                <h3>Order ID: {order.id}</h3>
-                <p>Order Date: {order.orderTime ? new Date(order.orderTime).toLocaleString() : "N/A"}</p>
-                <p>Status: {renderBadge(order.status)}</p>
-                {order.totalAmount && <p>Total: ${order.totalAmount}</p>}
-              </div>
+      <div className="orders-list">
+        {filteredOrders.map(order => (
+          <div key={order.id} className="order-card">
+            <h3>Order ID: {order.id}</h3>
+            <p>Order Date: {new Date(order.orderTime).toLocaleString()}</p>
+            <p>Status: {renderBadge(order.status)}</p>
 
-              <div className="order-items">
-                <h4>Items ({order.items?.length || 0}):</h4>
-                {order.items && order.items.length > 0 ? (
-                  order.items.map((item, idx) => renderOrderItem(item, idx))
-                ) : (
-                  <p className="no-items">No items in this order.</p>
-                )}
-              </div>
-
-              {renderStatusControls(order)}
+            <div className="order-items">
+              {order.items.map((item, idx) => (
+                <div key={idx} className="order-item">
+                  {item.product ? (
+                    <>
+                      <img src={item.product.photo} alt={item.product.name} />
+                      <div>
+                        <p className="product-name">{item.product.name}</p>
+                        <p>Quantity: {item.quantity}</p>
+                      </div>
+                    </>
+                  ) : (
+                    <div>
+                      <p className="product-warning">⚠️ Product not found</p>
+                      <p>Quantity: {item.quantity}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      )}
+            <div className='user-info'>
+              <p><strong>User ID:</strong> {order.userId || order.user?.id || "N/A"}</p>
+              <p>
+                <strong>User Name:</strong>{" "}
+                {
+                  order.userName ||
+                  (order.user?.firstName && order.user?.lastName
+                    ? `${order.user.firstName} ${order.user.lastName}`
+                    : order.user?.name || order.user?.username || "N/A")
+                }
+              </p>
+            </div>
+            {renderStatusControls(order)}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

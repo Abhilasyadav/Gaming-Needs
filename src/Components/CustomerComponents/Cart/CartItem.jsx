@@ -10,7 +10,7 @@ const CartItem = ({ item, onAdd, onRemoveOne, onDelete }) => {
         <img src={product.photo} alt={product.name} className="product-img" />
         <div>
           <h4 className="product-name">{product.name}</h4>
-          <p className="product-price">₹{product.price.toFixed(2)} × {quantity}</p>
+          <p className="product-price">₹{product.price.toFixed(0)} × {quantity}</p>
         </div>
       </div>
 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
 
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export default function ProductViewEdit({ product, onSave, onCancelEdit }) {
 
 
@@ -273,7 +275,7 @@ export default function ProductViewEdit({ product, onSave, onCancelEdit }) {
     const token = localStorage.getItem("authToken");
 
     try {
-      const response = await fetch('http://localhost:8080/updateProduct', {
+      const response = await fetch(`${API_BASE}/updateProduct`, {
         method: 'Post', 
         headers: {
           'Content-Type': 'application/json',
@@ -296,7 +298,10 @@ export default function ProductViewEdit({ product, onSave, onCancelEdit }) {
       }
 
       const updatedProductData = await response.json(); 
-      toast.success('Product updated successfully!')
+      toast.success('Product updated successfully!',{
+        backgroundColor: '#5CB338',
+        color: '#fff',
+      })
       console.log('Product updated successfully via API:', updatedProductData);
 
 

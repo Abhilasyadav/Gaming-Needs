@@ -1,12 +1,12 @@
 import Navbar from './Navbar';
-import './About.css';
+import './style/About.css';
 
 const About = () => {
   return (
     <>
     <Navbar/>
     <div className="about-container">
-      <h1 className="about-title">About Our E-Commerce App</h1>
+      <h1 className="about-title">About Our Gaming Needs App</h1>
 
       <section className="about-section">
         <h2>Overview</h2>
@@ -54,8 +54,8 @@ const About = () => {
       <section className="about-section">
         <h2>Technology Stack</h2>
         <ul>
-          <li>Frontend: React, Axios, CSS</li>
-          <li>Backend: Spring Boot</li>
+          <li>Frontend: React, Fetch, CSS</li>
+          <li>Backend: Spring Boot, Spring Security, Spring MVC</li>
           <li>Database: MySQL</li>
           <li>Authentication: JWT</li>
         </ul>

@@ -1,4 +1,5 @@
 import { useNavigate, Link } from "react-router-dom";
+import logo from '../../assets/logo.png';
 
 export default function AdminSidebar({ activeItem, onMenuItemClick, onLogout }) {
   const navigate = useNavigate();
@@ -21,6 +22,9 @@ export default function AdminSidebar({ activeItem, onMenuItemClick, onLogout }) 
     paddingBottom: '20px',
     borderBottom: '1px solid #eee',
     textAlign: 'center',
+    alignItems: 'center',
+    display: 'flex',
+    justifyContent: 'center',
   };
 
   const logoStyles = {
@@ -100,7 +104,12 @@ export default function AdminSidebar({ activeItem, onMenuItemClick, onLogout }) 
     color: '#555',
   };
 
-  // Helper function to get icon based on item name (using placeholders)
+  const logoStyle = {
+    width: '140px',
+    height: '65px',
+    objectFit: 'cover', 
+  }
+
   const getIcon = (itemName) => {
     switch (itemName.toLowerCase()) {
       case 'dashboard': return '📊';
@@ -119,24 +128,20 @@ export default function AdminSidebar({ activeItem, onMenuItemClick, onLogout }) 
   const handleLogout = async (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     try {
-      // Clear localStorage
       localStorage.removeItem('authToken');
       localStorage.removeItem('userRole');
-      
-      // If onLogout prop is provided, use it (recommended approach)
+
       if (onLogout) {
         onLogout();
         return;
       }
-      
-      // Fallback: Force a complete page reload to reset authentication state
+
       window.location.href = '/signin';
-      
+
     } catch (error) {
       console.error('Error during logout:', error);
-      // Final fallback - force reload to root which will redirect to signin
       window.location.href = '/';
     }
   };
@@ -144,8 +149,8 @@ export default function AdminSidebar({ activeItem, onMenuItemClick, onLogout }) 
   return (
     <div style={sidebarStyles}>
       <div>
-        <Link to="/user" >
-          <span style={{ fontSize: '2rem', fontWeight: 'bold' }}>Gaming <span style={{ color: '#6366f1' }}>Needs</span></span>
+        <Link to="/" style={logoContainerStyles}>
+          <img src={logo} alt="Logo" style={logoStyle} />
         </Link>
       </div>
 
@@ -163,51 +168,28 @@ export default function AdminSidebar({ activeItem, onMenuItemClick, onLogout }) 
         >
           <span style={iconStyles}>{getIcon('products')}</span> Products
         </li>
-        <ul style={subMenuContainerStyles}>
-          <li
-            style={activeItem === 'product_list' ? activeSubMenuItemStyles : subMenuItemStyles}
-            onClick={() => onMenuItemClick('product_list')}
-          >
-            Product List
-          </li>
-          <li
-            style={activeItem === 'add_product' ? activeSubMenuItemStyles : subMenuItemStyles}
-            onClick={() => onMenuItemClick('add_product')}
-          >
-            Add Product
-          </li>
-        </ul>
 
-        {/* <li
-          style={activeItem === 'categories' ? activeMenuItemStyles : menuItemStyles}
-          onClick={() => onMenuItemClick('categories')}
-        >
-          <span style={iconStyles}>{getIcon('categories')}</span> Categories
-        </li> */}
         <li
           style={activeItem === 'customers' ? activeMenuItemStyles : menuItemStyles}
           onClick={() => onMenuItemClick('customers')}
         >
           <span style={iconStyles}>{getIcon('customers')}</span> Customers
         </li>
+
         <li
           style={activeItem === 'orders' ? activeMenuItemStyles : menuItemStyles}
           onClick={() => onMenuItemClick('orders')}
         >
           <span style={iconStyles}>{getIcon('orders')}</span> Orders
         </li>
-        {/* <li
-          style={activeItem === 'analytics' ? activeMenuItemStyles : menuItemStyles}
-          onClick={() => onMenuItemClick('analytics')}
-        >
-          <span style={iconStyles}>{getIcon('analytics')}</span> Analytics
-        </li> */}
+
         <li
           style={activeItem === 'notifications' ? activeMenuItemStyles : menuItemStyles}
           onClick={() => onMenuItemClick('notifications')}
         >
           <span style={iconStyles}>{getIcon('notifications')}</span> Notifications
         </li>
+
       </ul>
 
       <div style={bottomSectionStyles}>
