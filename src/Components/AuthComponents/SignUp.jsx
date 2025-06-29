@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 
-const API_BASE = import.meta.env.VITEP_API_BASE;
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 const SignUp = () => {
     const [formData, setFormData] = useState({
@@ -18,15 +18,10 @@ const SignUp = () => {
 
     const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
-    const [darkMode, setDarkMode] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const toggleTheme = () => {
-        setDarkMode(!darkMode);
     };
 
     const validate = () => {
@@ -52,7 +47,6 @@ const SignUp = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-            console.log(formData);
             if (res.ok) {
                 setMessage('User registered successfully!');
                 toast.success('User registered successfully!');
@@ -71,81 +65,96 @@ const SignUp = () => {
             } else {
                 const data = await res.json();
                 setMessage(data.message || 'Registration failed');
-                toast.error(data.message || 'Registration failed');
             }
         } catch (err) {
-            toast.error('Network error.');
+            toast.error('Network error.', {
+                position: 'top-right',
+            });
             setMessage('Network error');
         }
     };
 
+    // Responsive styles using inline media queries
+    const isMobile = window.innerWidth <= 600;
     const themeStyles = {
         container: {
-            maxWidth: '700px',
-            margin: '40px auto',
-            padding: '30px',
+            maxWidth: isMobile ? '98vw' : '700px',
+            margin: isMobile ? '16px auto' : '40px auto',
+            padding: isMobile ? '16px' : '30px',
             borderRadius: '12px',
             boxShadow: '0 0 15px rgba(0,0,0,0.1)',
-            backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-            color: darkMode ? '#f5f5f5' : '#333'
+            backgroundColor: '#ffffff',
+            color: '#333',
+            width: '100%',
+            boxSizing: 'border-box'
         },
         input: {
-            padding: '10px',
+            padding: isMobile ? '8px' : '10px',
             borderRadius: '8px',
             border: '1px solid #ccc',
             width: '100%',
             marginBottom: '10px',
-            backgroundColor: darkMode ? '#2a2a2a' : '#fff',
-            color: darkMode ? '#f5f5f5' : '#333'
+            backgroundColor: '#fff',
+            color: '#333',
+            fontSize: isMobile ? '1em' : '1.05em'
         },
         select: {
-            ...this?.input,
-            backgroundColor: darkMode ? '#2a2a2a' : '#fff',
-            color: darkMode ? '#f5f5f5' : '#333'
+            padding: isMobile ? '8px' : '10px',
+            borderRadius: '8px',
+            border: '1px solid #ccc',
+            width: '100%',
+            marginBottom: '10px',
+            backgroundColor: '#fff',
+            color: '#333',
+            fontSize: isMobile ? '1em' : '1.05em'
         },
         button: {
-            padding: '12px',
+            padding: isMobile ? '10px' : '12px',
             width: '100%',
-            backgroundColor: darkMode ? '#007bff' : '#0056b3',
+            backgroundColor: '#0056b3',
             border: 'none',
             borderRadius: '8px',
             color: '#fff',
             fontWeight: 'bold',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            fontSize: isMobile ? '1em' : '1.1em'
         },
         alert: {
             padding: '12px',
             marginBottom: '15px',
             borderRadius: '8px',
-            backgroundColor: darkMode ? '#333' : '#e6f0ff',
-            color: darkMode ? '#e0e0e0' : '#004085',
-            border: darkMode ? '1px solid #555' : '1px solid #b3d1ff'
+            backgroundColor: '#e6f0ff',
+            color: '#004085',
+            border: '1px solid #b3d1ff',
+            fontSize: isMobile ? '1em' : '1.05em'
         },
         label: {
             fontWeight: '600',
             marginBottom: '5px',
-            display: 'block'
+            display: 'block',
+            fontSize: isMobile ? '1em' : '1.05em'
         },
         error: {
             color: 'red',
-            fontSize: '0.85em',
+            fontSize: '0.95em',
             marginTop: '-8px',
             marginBottom: '8px'
         },
-        themeSwitch: {
-            textAlign: 'right',
-            marginBottom: '10px'
+        altButton: {
+            backgroundColor: '#e0e0e0',
+            color: '#000',
+            padding: isMobile ? '8px 10px' : '8px 16px',
+            borderRadius: '6px',
+            border: 'none',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+            fontSize: isMobile ? '1em' : '1.05em'
         }
     };
 
     return (
         <div style={themeStyles.container}>
-            <div style={themeStyles.themeSwitch}>
-                <button onClick={toggleTheme} style={{ marginBottom: '20px' }}>
-                    Switch to {darkMode ? 'Light' : 'Dark'} Mode
-                </button>
-            </div>
-            <h2 style={{ textAlign: 'center' }}>Sign Up</h2>
+            <h2 style={{ textAlign: 'center', fontSize: isMobile ? '1.3em' : '1.7em' }}>Sign Up</h2>
             {message && <div style={themeStyles.alert}>{message}</div>}
             <form onSubmit={handleSubmit}>
                 {[
@@ -171,7 +180,7 @@ const SignUp = () => {
 
                 <div>
                     <label style={themeStyles.label}>Gender</label>
-                    <select name="gender" value={formData.gender} onChange={handleChange} style={themeStyles.input}>
+                    <select name="gender" value={formData.gender} onChange={handleChange} style={themeStyles.select}>
                         <option value="MALE">Male</option>
                         <option value="FEMALE">Female</option>
                         <option value="OTHER">Other</option>
@@ -193,7 +202,7 @@ const SignUp = () => {
 
                 <div>
                     <label style={themeStyles.label}>Role</label>
-                    <select name="role" value={formData.role} onChange={handleChange} style={themeStyles.input}>
+                    <select name="role" value={formData.role} onChange={handleChange} style={themeStyles.select}>
                         <option value="USER">User</option>
                         <option value="ADMIN">Admin</option>
                     </select>
@@ -207,15 +216,7 @@ const SignUp = () => {
                 <button
                     type="button"
                     onClick={() => window.location.href = '/signin'}
-                    style={{
-                        backgroundColor: darkMode ? '#444' : '#e0e0e0',
-                        color: darkMode ? '#fff' : '#000',
-                        padding: '8px 16px',
-                        borderRadius: '6px',
-                        border: 'none',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
-                    }}
+                    style={themeStyles.altButton}
                 >
                     Sign In
                 </button>

@@ -53,7 +53,6 @@ export default function Orders() {
   const [productRatings, setProductRatings] = useState({});
   const [ratedProductIds, setRatedProductIds] = useState(new Set());
   const token = localStorage.getItem("authToken");
-  console.log("Token:", token);
 
   const decoded = jwtDecode(token);
   const username = decoded?.sub;

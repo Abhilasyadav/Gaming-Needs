@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
-import { toast } from 'react-toastify';
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -15,7 +14,6 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
 
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
-  const [darkMode, setDarkMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -25,8 +23,6 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
   };
-
-  const toggleTheme = () => setDarkMode(!darkMode);
 
   const validate = () => {
     const newErrors = {};
@@ -56,8 +52,6 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
         body: JSON.stringify(formData)
       });
 
-      console.log("Raw response:", res);
-
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
@@ -68,12 +62,10 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
       if (contentType && contentType.includes("application/json")) {
         data = await res.json();
       } else {
-        // If response is a plain JWT token string
         const tokenString = await res.text();
         data = { token: tokenString };
       }
 
-      console.log("Parsed data =>", data);
       const token = typeof data === 'string' ? data : data.token;
       
       if (!token) {
@@ -81,24 +73,14 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
       }
 
       const decoded = jwtDecode(token);
-      console.log("Decoded token:", decoded);
-      
       const role = decoded.role;
 
       if (role === "ADMIN" || role === "USER") {
-        // Store authentication data
         localStorage.setItem("authToken", token);
         localStorage.setItem("userRole", role);
-        
-        // Update parent component state
         if (setIsAuthenticated) setIsAuthenticated(true);
         if (setUserRole) setUserRole(role);
-        
         setMessage('Signed in successfully!');
-        toast.success('Signed in successfully!', {
-          position: toast.POSITION.TOP_RIGHT,})
-        
-        // Navigate to appropriate dashboard
         setTimeout(() => {
           if (role === "ADMIN") {
             navigate('/admin');
@@ -106,15 +88,13 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
             navigate('/user');
           }
         }, 1000);
-        
       } else {
         throw new Error('Invalid user role');
       }
 
     } catch (err) {
-      console.error("❌ Sign in error:", err);
+      console.error("Sign in error:", err);
       let errorMessage = 'Sign in failed';
-      
       if (err.message.includes('HTTP error')) {
         errorMessage = 'Invalid credentials or server error';
       } else if (err.message.includes('Network')) {
@@ -122,102 +102,99 @@ const SignIn = ({ setIsAuthenticated, setUserRole }) => {
       } else if (err.message.includes('token')) {
         errorMessage = 'Authentication error - please try again';
       }
-      toast.error(errorMessage, {
-        position: toast.POSITION.TOP_RIGHT,})
       setMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
+
+  const isMobile = window.innerWidth <= 600;
   const themeStyles = {
     container: {
-      maxWidth: '500px',
-      margin: '40px auto',
-      padding: '30px',
+      maxWidth: isMobile ? '98vw' : '500px',
+      margin: isMobile ? '16px auto' : '40px auto',
+      padding: isMobile ? '16px' : '30px',
       borderRadius: '12px',
       boxShadow: '0 0 15px rgba(0,0,0,0.1)',
-      backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-      color: darkMode ? '#f5f5f5' : '#333'
+      backgroundColor: '#ffffff',
+      color: '#333',
+      width: '100%',
+      boxSizing: 'border-box'
     },
     input: {
-      padding: '10px',
+      padding: isMobile ? '8px' : '10px',
       borderRadius: '8px',
       border: '1px solid #ccc',
       width: '100%',
       marginBottom: '10px',
-      backgroundColor: darkMode ? '#2a2a2a' : '#fff',
-      color: darkMode ? '#f5f5f5' : '#333'
+      backgroundColor: '#fff',
+      color: '#333',
+      fontSize: isMobile ? '1em' : '1.05em'
     },
     button: {
-      padding: '12px',
+      padding: isMobile ? '10px' : '12px',
       width: '100%',
-      backgroundColor: isLoading ? '#ccc' : (darkMode ? '#007bff' : '#0056b3'),
+      backgroundColor: isLoading ? '#ccc' : '#0056b3',
       border: 'none',
       borderRadius: '8px',
       color: '#fff',
       fontWeight: 'bold',
       cursor: isLoading ? 'not-allowed' : 'pointer',
-      opacity: isLoading ? 0.7 : 1
+      opacity: isLoading ? 0.7 : 1,
+      fontSize: isMobile ? '1em' : '1.1em'
     },
     alert: {
       padding: '12px',
       marginBottom: '15px',
       borderRadius: '8px',
       backgroundColor: message.includes('successfully') 
-        ? (darkMode ? '#1e4f1e' : '#d4edda') 
-        : (darkMode ? '#4e1e1e' : '#f8d7da'),
+        ? '#d4edda' 
+        : '#f8d7da',
       color: message.includes('successfully') 
-        ? (darkMode ? '#90ee90' : '#155724') 
-        : (darkMode ? '#ff6b6b' : '#721c24'),
+        ? '#155724' 
+        : '#721c24',
       border: message.includes('successfully') 
-        ? (darkMode ? '1px solid #90ee90' : '1px solid #c3e6cb') 
-        : (darkMode ? '1px solid #ff6b6b' : '1px solid #f5c6cb')
+        ? '1px solid #c3e6cb' 
+        : '1px solid #f5c6cb',
+      fontSize: isMobile ? '1em' : '1.05em'
     },
     label: {
       fontWeight: '600',
       marginBottom: '5px',
-      display: 'block'
+      display: 'block',
+      fontSize: isMobile ? '1em' : '1.05em'
     },
     error: {
       color: '#ff6b6b',
-      fontSize: '0.85em',
+      fontSize: '0.95em',
       marginTop: '-8px',
       marginBottom: '8px'
-    },
-    themeSwitch: {
-      textAlign: 'right',
-      marginBottom: '10px'
     },
     linkButton: {
       background: 'none',
       border: 'none',
-      color: darkMode ? '#8ab4f8' : '#007bff',
+      color: '#007bff',
       textDecoration: 'underline',
       cursor: 'pointer',
       padding: 0,
-      fontSize: '0.9rem'
+      fontSize: isMobile ? '0.95em' : '0.9rem'
     },
     altButton: {
-      backgroundColor: darkMode ? '#444' : '#e0e0e0',
-      color: darkMode ? '#fff' : '#000',
-      padding: '8px 16px',
+      backgroundColor: '#e0e0e0',
+      color: '#000',
+      padding: isMobile ? '8px 10px' : '8px 16px',
       borderRadius: '6px',
       border: 'none',
       fontWeight: 'bold',
-      cursor: 'pointer'
+      cursor: 'pointer',
+      fontSize: isMobile ? '1em' : '1.05em'
     }
   };
 
   return (
     <div style={themeStyles.container}>
-      <div style={themeStyles.themeSwitch}>
-        <button onClick={toggleTheme}>
-          Switch to {darkMode ? 'Light' : 'Dark'} Mode
-        </button>
-      </div>
-
-      <h2 style={{ textAlign: 'center' }}>Sign In</h2>
+      <h2 style={{ textAlign: 'center', fontSize: isMobile ? '1.3em' : '1.7em' }}>Sign In</h2>
 
       {message && <div style={themeStyles.alert}>{message}</div>}
 
